@@ -6,7 +6,7 @@
 <meta name="supported-color-schemes" content="light">
 <title>CPLHR-Rising</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f3a5f">
+<meta name="theme-color" content="#12305a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CPLHR-Rising">
@@ -16,11 +16,11 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   :root{color-scheme:only light}
-  html,body{margin:0;height:100%;background:#1f3a5f;overflow:hidden}
+  html,body{margin:0;height:100%;background:#12305a;overflow:hidden}
   body{padding-top:env(safe-area-inset-top);box-sizing:border-box}
   iframe{display:block;width:100%;height:100%;border:0;background:#f3f5f9}
   #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-    background:linear-gradient(160deg,#1f3a5f,#2c5282);color:#fff;font:600 20px system-ui,sans-serif;transition:opacity .3s}
+    background:linear-gradient(160deg,#12305a,#1c5aa6);color:#fff;font:600 20px system-ui,sans-serif;transition:opacity .3s}
   #splash img{width:96px;height:96px;border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
   #splash.hide{opacity:0;pointer-events:none}
 </style>
@@ -37,6 +37,20 @@
   f.onload = () => document.getElementById('splash').classList.add('hide');
   document.body.appendChild(f);
   setTimeout(() => document.getElementById('splash').classList.add('hide'), 8000);
+
+  // จำการเข้าสู่ระบบไว้ที่ hr.cplinter.com (ไม่หายตอนรีเฟรช) — รับ/ส่งเฉพาะกับหน้าแอปของ Google Apps Script
+  const KEY = 'cplhr_token';
+  const okOrigin = o => { try { return /\.googleusercontent\.com$/.test(new URL(o).hostname); } catch(e){ return false; } };
+  window.addEventListener('message', e => {
+    const d = e.data;
+    if (!d || !d.cplhr || !okOrigin(e.origin)) return;
+    try {
+      if (d.op === 'set' && typeof d.token === 'string' && d.token.length < 100) localStorage.setItem(KEY, d.token);
+      else if (d.op === 'del') localStorage.removeItem(KEY);
+      else if (d.op === 'get') e.source.postMessage({ cplhr: 1, op: 'token', token: localStorage.getItem(KEY) }, e.origin);
+    } catch(err) {}
+  });
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
